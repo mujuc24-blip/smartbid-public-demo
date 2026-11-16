@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>SmartBid | 업체·계약 업무대장</title><link rel="stylesheet" href="styles.css">
+<script defer src="data.js"></script><script defer src="core.js"></script><script defer src="app.js"></script></head>
+<body><header><div class="brand">SmartBid <span>PUBLIC DEMO</span></div><div>영업 운영 / 업체·계약 업무대장</div></header>
+<main><section class="heading"><div><p class="eyebrow">업체 중심 계약 탐색</p><h1>업체·계약 업무대장</h1><p>업체 선택 → 공고·계약 그룹 → 행 이력과 납기 → 내부 구매상태 관리</p></div><button id="reset" class="secondary">내부입력 초기화</button></section>
+<section class="guidance"><strong>공개 체험판 · 실제 API 고정표본 · 자동갱신 아님</strong><p id="snapshot"></p><p>공적 식별번호가 없어 업체명 기반 임시그룹·로컬 ID를 사용합니다. 동일 이름의 동일 법인 여부는 확정하지 않습니다. 브라우저 로컬저장으로 기기 간 공유되지 않으며 민감정보 입력을 자제하세요.</p></section>
+<div class="toolbar"><label>업체명·건명 검색<input id="search" type="search" maxlength="200" placeholder="업체명 또는 공고 건명 입력" autocomplete="off"></label><label>품목<select id="product"><option value="">전체 품목</option><option>배전반</option><option>분전반</option><option>전동기제어반</option></select></label><div class="basis" id="today"></div></div>
+<p id="notice" role="status" aria-live="polite"></p>
+<div class="workspace"><aside aria-label="업체 후보 목록"><div class="list-heading"><h2>업체 후보</h2><span id="count"></span></div><div id="company-list"></div><p class="muted small">조회 대상인 법인명 표본 3개만 수록. 전체 업체·전체 수주 현황이 아닙니다.</p></aside><section id="detail" aria-label="선택 업체 계약 상세"></section></div>
+<footer>납기 경과는 납품완료나 지연 발생을 의미하지 않습니다. 내부 구매상태는 사용자 기록이며 API 사실과 별개입니다. 실제 구매·제작업체는 미확인입니다.</footer></main></body></html>
