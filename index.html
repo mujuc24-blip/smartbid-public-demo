@@ -1,12 +1,24 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>SmartBid | 업체·계약 업무대장</title><link rel="stylesheet" href="styles.css">
-<script defer src="data.js"></script><script defer src="core.js"></script><script defer src="app.js"></script></head>
-<body><header><div class="brand">SmartBid <span>PUBLIC DEMO</span></div><div>영업 운영 / 업체·계약 업무대장</div></header>
-<main><section class="heading"><div><p class="eyebrow">업체 중심 계약 탐색</p><h1>업체·계약 업무대장</h1><p>업체 선택 → 공고·계약 그룹 → 행 이력과 납기 → 내부 구매상태 관리</p></div><button id="reset" class="secondary">내부입력 초기화</button></section>
-<section class="guidance"><strong>공개 체험판 · 실제 API 고정표본 · 자동갱신 아님</strong><p id="snapshot"></p><p>공적 식별번호가 없어 업체명 기반 임시그룹·로컬 ID를 사용합니다. 동일 이름의 동일 법인 여부는 확정하지 않습니다. 브라우저 로컬저장으로 기기 간 공유되지 않으며 민감정보 입력을 자제하세요.</p></section>
-<div class="toolbar"><label>업체명·건명 검색<input id="search" type="search" maxlength="200" placeholder="업체명 또는 공고 건명 입력" autocomplete="off"></label><label>품목<select id="product"><option value="">전체 품목</option><option>배전반</option><option>분전반</option><option>전동기제어반</option></select></label><div class="basis" id="today"></div></div>
-<p id="notice" role="status" aria-live="polite"></p>
-<div class="workspace"><aside aria-label="업체 후보 목록"><div class="list-heading"><h2>업체 후보</h2><span id="count"></span></div><div id="company-list"></div><p class="muted small">조회 대상인 법인명 표본 3개만 수록. 전체 업체·전체 수주 현황이 아닙니다.</p></aside><section id="detail" aria-label="선택 업체 계약 상세"></section></div>
-<footer>납기 경과는 납품완료나 지연 발생을 의미하지 않습니다. 내부 구매상태는 사용자 기록이며 API 사실과 별개입니다. 실제 구매·제작업체는 미확인입니다.</footer></main></body></html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>SmartBid | 전력기자재 영업 대시보드</title>
+<link rel="stylesheet" href="styles.css"><script defer src="public-data.js"></script><script defer src="core.js"></script><script defer src="app.js"></script>
+</head>
+<body>
+<header><a class="brand" href="#main">SmartBid <span>전력기자재 영업</span></a><span class="tag">실제 조달 표본 · v2</span></header>
+<main id="main">
+<div class="heading"><div><p class="eyebrow">SALES INTELLIGENCE / 공급영업</p><h1>낙찰을 살피고, 다음 영업을 준비하세요.</h1><p class="muted">배전반 · 분전반 · 전동기제어반 낙찰업체와 계약후보 분석</p></div><a class="link" href="#workspace">업체 업무대장 ↓</a></div>
+<section class="scope" aria-label="데이터 범위와 한계"><strong id="period"></strong><p id="snapshot"></p><p id="bias"></p><p><strong id="coverage"></strong> <span>차수 미반환으로 낙찰 귀속 확정 불가. 후보납기는 낙찰 공고납기·납품완료를 뜻하지 않습니다.</span></p></section>
+<form id="filters" class="filters" role="search"><label>개찰월<select id="month"><option value="">전체 기간</option></select></label><label>품목<select id="product"><option value="">전체 품목</option></select></label><label>업체 소재지역<select id="region"><option value="">전체 지역</option></select></label><label class="search">통합 검색<input id="search" type="search" placeholder="업체 · 공고 · 수요처 · 계약번호" autocomplete="off"></label><button type="button" id="clear" class="secondary">필터 초기화</button></form>
+<p id="result-summary" class="muted" aria-live="polite"></p>
+<section id="kpis" class="kpis" aria-label="선택 표본 핵심지표"></section>
+<div class="analytics"><section class="panel wide"><div class="section-head"><h2>월별 낙찰 표본</h2><span>금액 · 건수 / 실개찰월</span></div><div id="monthly"></div><p class="footnote">8월·11월은 부분월입니다. 막대는 표본금액이며 월별 시장 추세로 일반화할 수 없습니다.</p></section><section class="panel"><h2>품목별 구성</h2><div id="products"></div><p class="footnote">대표분류 기준 · 0건은 이 표본 내 미확보</p></section><section class="panel"><h2>업체 소재지역 분포</h2><div id="regions"></div><p class="footnote">낙찰행 수 기준 · 수요처 지역이 아닙니다. 주소 추정 없음.</p></section></div>
+<section class="panel deadline-panel"><div class="section-head"><h2>계약후보 납기</h2><span id="today"></span></div><p class="muted">통합계약번호별 1건으로 중복 제거합니다. 명시일이 여러 개면 미확인으로 분류하며, 일수로 날짜를 추정하지 않습니다.</p><div id="deadlines" class="deadline-grid"></div><p id="deadline-evidence" class="footnote"></p></section>
+<section class="panel"><div class="section-head"><h2>수요처별 표본 실적</h2><span>계약금액 합산 아님</span></div><div id="demands" class="table-scroll"></div></section>
+<section id="workspace"><div class="section-head"><div><p class="eyebrow">COMPANY WORKSPACE</p><h2>업체 후보 · 업무대장</h2></div><button id="reset-records" class="secondary" type="button">v2 내부 기록 초기화</button></div><p class="muted">금액순 랭킹 · 업체ID는 수집회차 임시그룹. 익명 업체는 로컬ID로 구분하며, 기존 3개 표본과 병합하지 않습니다.</p><p class="privacy">우호도·구매상태·메모는 이 브라우저에만 저장됩니다. 기기 간 공유·외부 전송 없음. 개인정보·민감정보 입력을 삼가세요.</p><div id="notice" role="status" aria-live="polite"></div><div class="workspace"><div id="companies" class="company-list" aria-label="업체랭킹"></div><section id="detail" class="panel inspector" aria-label="업체 상세"></section></div></section>
+<footer>고정 수집 표본 · 자동 API 갱신 없음 · 실제 구매업체 / 제작업체 / 납품완료 상태는 미확인<br>SmartBid · 공개 체험용 분석 / 내부 기록은 브라우저별 별도 보관</footer>
+</main>
+<dialog id="reset-dialog"><h2>v2 내부 기록을 초기화할까요?</h2><p>v2 우호도·구매상태·메모만 지웁니다. 기존 앱 기록과 조달표본은 그대로 유지됩니다.</p><div class="actions"><button id="cancel-reset" class="secondary">취소</button><button id="confirm-reset">초기화</button></div></dialog>
+</body></html>
