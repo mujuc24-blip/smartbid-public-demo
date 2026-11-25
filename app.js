@@ -69,8 +69,28 @@ function renderDetail(){
  else section.append(node('p','공고번호 수준 계약후보입니다. 상세 납기를 공고 납기로 자동 전용하지 않습니다.','footnote'));
  for(const group of C.groupContracts(record.contracts))section.append(contractGroup(group,record));target.append(section);}
 }
+function renderLeads(){
+ const leads=C.contactLeads(D.records,{product:$('lead-product').value,region:$('lead-region').value}),target=$('leads');target.replaceChildren();
+ const awards=leads.reduce((n,l)=>n+l.awardCount,0),named=leads.filter(l=>l.parts.some(p=>p.status==='원문 명시')).length;
+ $('lead-summary').textContent=`업체 ${leads.length}개 · 낙찰 ${awards}건 · 부품명 원문 명시 업체 ${named}개 · 나머지 부품은 상담 시 확인`;
+ if(!leads.length){target.append(node('li','조건에 맞는 낙찰업체가 없습니다.','empty'));return;}
+ leads.forEach((lead,i)=>{
+  const item=node('li',undefined,'lead'),head=node('div',undefined,'lead-head');
+  head.append(node('span',String(i+1).padStart(2,'0'),'rank'),node('strong',lead.companyName),chip(lead.regionLabel,lead.region===null));
+  item.append(head,node('p',`낙찰 ${lead.awardCount}건 · ${money(lead.awardAmount)} · 최근 최종낙찰일 ${lead.latestAwardDate}`,'company-meta'));
+  const productLine=node('p','낙찰 완제품 ','company-meta');lead.products.forEach(p=>productLine.append(chip(p)));item.append(productLine);
+  item.append(node('p',`계약후보 ${lead.candidateContractCount}건 · 낙찰 아님 · 귀속 미확정 참고`,'footnote'));
+  const evidence=node('details');evidence.append(node('summary',`근거 공고 ${lead.evidence.length}건`));const scroll=node('div',undefined,'table-scroll');
+  scroll.append(table(['공고번호 / 차수','완제품','실개찰일시','최종낙찰일','낙찰금액','수요처','공고명'],lead.evidence.map(e=>[e.notice_no+' / '+e.notice_order,e.product,e.opened_at,e.award_date,money(e.award_amount),e.demand_name,e.title]),'표본 원행 그대로 · 링크 없음'));evidence.append(scroll);item.append(evidence);
+  const parts=node('details');parts.append(node('summary','우리 납품 부품 · 상담 시 확인 질문'));const partScroll=node('div',undefined,'table-scroll');
+  partScroll.append(table(['부품','상태','근거 또는 다음 확인 질문'],lead.parts.map(p=>[p.part,p.status,p.sources.length?p.sources.map(s=>`${s.field} ${s.notice_no}${s.contract_no?' / '+s.contract_no:''}: ${s.text}`).join(' | '):p.question]),'원문 명시도 구매 확정이 아닙니다'));parts.append(partScroll);item.append(parts);
+  target.append(item);
+ });
+}
 function refresh(){current=C.filter(D.records,readFilters());if(!current.some(r=>r.company_id===selected))selected=null;renderAnalytics();renderCompanies();renderDetail();}
 for(const month of C.months)option($('month'),month);for(const product of C.products)option($('product'),product);for(const region of [...new Set(D.records.map(r=>r.company_region||'미확인'))].sort())option($('region'),region);
+for(const product of C.products)option($('lead-product'),product);{const regions=new Set(D.records.map(r=>r.company_region).filter(Boolean));for(const region of [...regions].sort())option($('lead-region'),region);if(D.records.some(r=>!r.company_region))option($('lead-region'),'미확인','소재지역 미확인');}
+for(const id of ['lead-product','lead-region'])$(id).addEventListener('change',renderLeads);$('lead-filters').addEventListener('submit',e=>e.preventDefault());renderLeads();
 $('period').textContent=`실개찰일 기준 ${D.metadata.start_date} ~ ${D.metadata.end_date} · KST / 계약일 기준 아님`;
 $('snapshot').textContent='수집 완료 '+D.metadata.collected_at.replace('T',' ')+' · 고정 스냅샷 (수집시각 ≠ 계약변경시각)';$('bias').textContent=D.metadata.sampling;
 $('filters').addEventListener('submit',e=>e.preventDefault());for(const id of ['month','product','region'])$(id).addEventListener('change',refresh);$('search').addEventListener('input',refresh);
